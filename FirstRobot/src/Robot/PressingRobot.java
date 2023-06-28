@@ -16,7 +16,7 @@ public class PressingRobot {
 
 	            TimeUnit.SECONDS.sleep((long) 2.5);
 
-//	            showPosition();
+	            showPosition();
 	            
 	            // (592, 273)
 	            

@@ -7,41 +7,66 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
- 
+import java.util.concurrent.TimeUnit;
+
 import javax.imageio.ImageIO;
  
 public class ImageScanner {
  
     public static void main(String[] args) {
-        try {
-               BufferedImage bi = ImageIO.read(new File("C:\\Users\\plytn\\OneDrive\\Desktop\\CMD\\ScanningRobot\\screenshot.png"));
-               
-               int numThreads = 10;
-               Thread[] freds = new Thread[numThreads];
-               BufferedImage image = null;
-               try {
-                   image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
-               } catch (Exception e) {
-                   e.printStackTrace();
-               }
-               
-               for (int i = 0; i < numThreads; i++) {
-            	   Thread thread = new Thread(new ScanningThread(i, image, bi));
-            	   freds[i] = thread;
-            	   freds[i].start();
-               }
-               boolean isOnScreen = false;
-               for (int i = 0; i < numThreads; i++) {
-            	   freds[i].join();
-               }               
-               
-               
-//               boolean isOnScreen = isOnScreen(image);
-//               System.out.print(isOnScreen);
-            } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
-            }
+    	for(int i = 0; i < 3; i++) {
+    		scan();
+    	}
+    }    
+    
+    private static void scan() {
+    	try {
+//    		TimeUnit.SECONDS.sleep((long) 5);
+    		//es muss eine .png datei sein
+    		BufferedImage bi = ImageIO.read(new File("C:\\Code\\Robot\\pic.png"));
+           
+           int numThreads = 512;
+           
+           long start = System.currentTimeMillis();
+           
+           Thread[] freds = new Thread[numThreads];
+           BufferedImage image = null;
+           try {
+               image = new Robot().createScreenCapture(new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()));
+           } catch (Exception e) {
+               e.printStackTrace();
+           }
+           System.out.println(image.getHeight() + " x " + image.getWidth());
+           System.out.println(bi.getHeight() + " x " + bi.getWidth());
+           
+           boolean[] pres = new boolean[1];
+           pres[0] = false;
+           
+           for (int i = 0; i < numThreads; i++) {
+        	   Thread thread = new Thread(new ScanningThread(i, image, bi, pres));
+        	   freds[i] = thread;
+        	   freds[i].start();
+           }
+           boolean isOnScreen = pres[0];
+           
+           for (int i = 0; i < numThreads; i++) {
+        	   freds[i].join();
+           }
+           
+           long end = System.currentTimeMillis();
+           
+           
+           System.out.println(pres[0]);
+           System.out.println("Duration " + (end-start)/1000 + " s");
+           
+//           isOnScreen = isOnScreen(bi);
+//           System.out.print(isOnScreen);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            System.out.println("caught");
+        }
     }
+    
     
     private static boolean isOnScreen(BufferedImage bi){
         BufferedImage image = null;
@@ -71,6 +96,7 @@ public class ImageScanner {
                 for(int a = 0;a<bi.getWidth();a++){
                     l = y;
                     for(int b = 0;b<bi.getHeight();b++){
+                    	bot.mouseMove(k, l);
                         if(bi.getRGB(a, b) != image.getRGB(k, l)){
                             invalid = true;
                             break;
